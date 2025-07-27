@@ -26,7 +26,7 @@ module.exports = {
   // 动态彩带特效
   FLUTTERINGRIBBON: process.env.NEXT_PUBLIC_FLUTTERINGRIBBON || false, // 开关
   // 静态彩带特效
-  RIBBON: process.env.NEXT_PUBLIC_RIBBON || true, // 开关
+  RIBBON: process.env.NEXT_PUBLIC_RIBBON || false, // 开关
   // 星空雨特效（仅在黑夜模式下生效）
   STARRY_SKY: process.env.NEXT_PUBLIC_STARRY_SKY || true, // 开关
   // animate.css 动画资源CDN
