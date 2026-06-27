@@ -191,7 +191,8 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
         panelWrapper.classList.toggle('is-expanded', expanded)
         panel.classList.toggle('is-expanded', expanded)
         header.setAttribute('aria-expanded', expanded ? 'true' : 'false')
-        panel.style.maxHeight = expanded ? `${panel.scrollHeight}px` : '0px'
+        // 修复：使用足够大的固定值代替 scrollHeight，避免高亮前 DOM 未完全渲染导致截断
+        panel.style.maxHeight = expanded ? '9999px' : '0px'
 
         // 修复：展开后等待过渡动画完成，重新计算行号高度
         if (expanded && Prism?.plugins?.lineNumbers?.resize) {
@@ -267,24 +268,26 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
       Array.from(codeBlocks).forEach(item => {
         if (!item.classList.contains('line-numbers')) {
           item.classList.add('line-numbers')
-          // 移除强制 pre-wrap，避免长行自动换行导致行号与代码错位
-          // item.style.whiteSpace = 'pre-wrap'
         }
       })
     }
   }
-  // 重新渲染之前检查所有的多余text
-  try {
-    if (container && typeof Prism.highlightAllUnder === 'function') {
-      Prism.highlightAllUnder(container)
-    } else {
-      Prism.highlightAll()
+
+  // 延迟执行高亮，等待 autoloader 加载语言组件（如 prism-c.min.js）
+  const highlightTimeout = setTimeout(() => {
+    try {
+      if (container && typeof Prism.highlightAllUnder === 'function') {
+        Prism.highlightAllUnder(container)
+      } else {
+        Prism.highlightAll()
+      }
+    } catch (err) {
+      console.warn('[PrismMac] prism highlight failed:', err)
     }
-  } catch (err) {
-    console.warn('[PrismMac] prism highlight failed:', err)
-  }
+  }, 300)
+
+  // Mac 栏可以立即添加（不依赖高亮）
   const codeToolBars = container?.getElementsByClassName('code-toolbar')
-  // Add pre-mac element for Mac Style UI
   if (codeMacBar && codeToolBars) {
     Array.from(codeToolBars).forEach(item => {
       try {
@@ -300,11 +303,18 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
       }
     })
   }
+
   // 折叠代码行号bug
   if (codeLineNumbers) {
-    return fixCodeLineStyle()
+    const dispose = fixCodeLineStyle()
+    return () => {
+      clearTimeout(highlightTimeout)
+      if (typeof dispose === 'function') dispose()
+    }
   }
-  return () => {}
+  return () => {
+    clearTimeout(highlightTimeout)
+  }
 }
 /**
  * 行号样式在首次渲染或被detail折叠后行高判断错误
