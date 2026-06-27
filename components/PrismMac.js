@@ -55,7 +55,8 @@ const PrismMac = () => {
       .then(() => {
         if (isDisposed) return
         try {
-          if (typeof window !== 'undefined' && !window.Prism) {
+          // 关键修复：总是将 import 的 Prism 暴露到 window，确保 autoloader 注册到正确的对象上
+          if (typeof window !== 'undefined') {
             window.Prism = Prism
           }
           if (window?.Prism?.plugins?.autoloader) {
@@ -191,10 +192,10 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
         panelWrapper.classList.toggle('is-expanded', expanded)
         panel.classList.toggle('is-expanded', expanded)
         header.setAttribute('aria-expanded', expanded ? 'true' : 'false')
-        // 修复：使用足够大的固定值代替 scrollHeight，避免高亮前 DOM 未完全渲染导致截断
+        // 使用足够大的固定值代替 scrollHeight，避免高亮前 DOM 未完全渲染导致截断
         panel.style.maxHeight = expanded ? '9999px' : '0px'
 
-        // 修复：展开后等待过渡动画完成，重新计算行号高度
+        // 展开后等待过渡动画完成，重新计算行号高度
         if (expanded && Prism?.plugins?.lineNumbers?.resize) {
           setTimeout(() => {
             const preCodes = panel.querySelectorAll('pre.notion-code')
@@ -273,13 +274,14 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
     }
   }
 
-  // 延迟执行高亮，等待 autoloader 加载语言组件（如 prism-c.min.js）
+  // 关键修复：使用 window.Prism（已被同步为 import 的 Prism）执行高亮，确保 autoloader 生效
   const highlightTimeout = setTimeout(() => {
     try {
-      if (container && typeof Prism.highlightAllUnder === 'function') {
-        Prism.highlightAllUnder(container)
+      const p = window.Prism || Prism
+      if (container && typeof p.highlightAllUnder === 'function') {
+        p.highlightAllUnder(container)
       } else {
-        Prism.highlightAll()
+        p.highlightAll()
       }
     } catch (err) {
       console.warn('[PrismMac] prism highlight failed:', err)
