@@ -228,6 +228,17 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
         header.setAttribute('aria-expanded', expanded ? 'true' : 'false')
         panel.style.maxHeight = expanded ? `${panel.scrollHeight}px` : '0px'
       }
+      if (expanded && Prism?.plugins?.lineNumbers?.resize) {
+        setTimeout(() => {
+           const preCodes = panel.querySelectorAll('pre.notion-code')
+           preCodes.forEach(preCode => {
+            try {
+                 Prism.plugins.lineNumbers.resize(preCode)
+           } catch (e) { /* ignore */ }
+        })
+     }, 350)
+   }
+}
 
       header.addEventListener('click', () => {
         const expanded = panelWrapper.classList.contains('is-expanded')
@@ -297,7 +308,7 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
       Array.from(codeBlocks).forEach(item => {
         if (!item.classList.contains('line-numbers')) {
           item.classList.add('line-numbers')
-          item.style.whiteSpace = 'pre-wrap'
+          //item.style.whiteSpace = 'pre-wrap'
         }
       })
     }
@@ -355,7 +366,7 @@ const fixCodeLineStyle = () => {
 
   const observer = new MutationObserver(mutationsList => {
     for (const m of mutationsList) {
-      if (m.target.nodeName === 'DETAILS') {
+      if (m.target.nodeName === 'DETAILS' || m.target.classList?.contains('collapse-panel') ||m.target.classList?.contains('collapse-panel-wrapper')) {
         const preCodes = m.target.querySelectorAll('pre.notion-code')
         for (const preCode of preCodes) {
           try {
