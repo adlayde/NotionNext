@@ -275,18 +275,17 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
   }
 
   // 关键修复：使用 window.Prism（已被同步为 import 的 Prism）执行高亮，确保 autoloader 生效
-  const highlightTimeout = setTimeout(() => {
-    try {
-      const p = window.Prism || Prism
-      if (container && typeof p.highlightAllUnder === 'function') {
-        p.highlightAllUnder(container)
-      } else {
-        p.highlightAll()
-      }
-    } catch (err) {
-      console.warn('[PrismMac] prism highlight failed:', err)
+  // 同步执行，autoloader 会异步加载缺失的语言组件并在完成后自动重高亮
+  try {
+    const p = window.Prism || Prism
+    if (container && typeof p.highlightAllUnder === 'function') {
+      p.highlightAllUnder(container)
+    } else {
+      p.highlightAll()
     }
-  }, 300)
+  } catch (err) {
+    console.warn('[PrismMac] prism highlight failed:', err)
+  }
 
   // Mac 栏可以立即添加（不依赖高亮）
   const codeToolBars = container?.getElementsByClassName('code-toolbar')
@@ -308,15 +307,9 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
 
   // 折叠代码行号bug
   if (codeLineNumbers) {
-    const dispose = fixCodeLineStyle()
-    return () => {
-      clearTimeout(highlightTimeout)
-      if (typeof dispose === 'function') dispose()
-    }
+    return fixCodeLineStyle()
   }
-  return () => {
-    clearTimeout(highlightTimeout)
-  }
+  return () => {}
 }
 /**
  * 行号样式在首次渲染或被detail折叠后行高判断错误
