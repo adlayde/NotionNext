@@ -105,6 +105,17 @@ pre.notion-code.line-numbers {
   padding-left: 3.8em !important;
 }
 
+/* 修复行号错位：强制行号容器和 span 的 line-height 与 pre 一致 */
+/* Prism 默认 line-numbers-rows top:0 需修正为 padding-top 值 */
+pre.notion-code.line-numbers .line-numbers-rows {
+  top: 46px !important;
+  line-height: 1.6 !important;
+}
+pre.notion-code.line-numbers .line-numbers-rows > span {
+  line-height: 1.6 !important;
+  padding-right: 0.8em;
+}
+
 /* 5. 智能折叠 UI */
 .collapse-wrapper {
   margin: 0;
