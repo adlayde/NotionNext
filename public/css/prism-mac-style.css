@@ -109,6 +109,12 @@ pre.notion-code.line-numbers {
 .collapse-wrapper {
   margin: 0;
 }
+/* 修复：折叠面板内的 code-toolbar 去掉自身的圆角/边框/阴影，由外层容器统一控制，消除双重圆角缝隙 */
+.collapse-panel .code-toolbar {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
 .collapse-panel-wrapper {
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.08);
