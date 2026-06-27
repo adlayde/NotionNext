@@ -11,7 +11,8 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   /* 背景透明，让 Prism 主题的背景色自然透出 */
   background: transparent;
-  overflow: hidden;
+  /* 去掉 overflow: hidden，防止长代码块的行号被裁剪 */
+  overflow: visible;
   transition: transform 0.3s ease;
 }
 html.dark .code-toolbar {
