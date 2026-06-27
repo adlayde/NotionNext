@@ -146,7 +146,6 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
   if (!codeCollapse) {
     return
   }
-  const COLLAPSE_MIN_LINES = Number(siteConfig('CODE_COLLAPSE_MIN_LINES', 20))
   const codeBlocks = document.querySelectorAll('.code-toolbar')
   for (const codeBlock of codeBlocks) {
     try {
@@ -162,10 +161,7 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
       const language = languageMatch ? languageMatch[1] : ''
       const text = code.textContent || ''
       const lineCount = text ? text.split('\n').length : 0
-      // 仅当代码行数超过阈值时才启用折叠
-      if (lineCount && lineCount < COLLAPSE_MIN_LINES) {
-        continue
-      }
+      // 不再限制最小行数，所有代码块都能折叠
       const parent = codeBlock.parentNode
       if (!parent || !parent.contains(codeBlock)) {
         continue
@@ -303,6 +299,22 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
         console.warn('[PrismMac] pre-mac failed:', err)
       }
     })
+  }
+
+  // 高亮完成后，强制重新计算所有代码块的行号，修复长代码块行号显示不完整的问题
+  if (codeLineNumbers && Prism?.plugins?.lineNumbers?.resize) {
+    setTimeout(() => {
+      const preCodes = container?.querySelectorAll('pre.notion-code')
+      if (preCodes) {
+        preCodes.forEach(preCode => {
+          try {
+            Prism.plugins.lineNumbers.resize(preCode)
+          } catch (e) {
+            /* ignore */
+          }
+        })
+      }
+    }, 200)
   }
 
   // 折叠代码行号bug
