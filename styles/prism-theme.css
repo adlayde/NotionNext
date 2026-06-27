@@ -1,6 +1,6 @@
-/* prism theme adjustments — 方案A：Mac 风格主导，本文件仅作基础兜底 */
+/* prism theme adjustments — 方案B：与 Mac 风格共存，支持 Prism 主题切换 */
 
-/* ========== 代码块基础样式（非 Mac 模式下生效） ========== */
+/* ========== 代码块基础样式（Mac 模式下由 pre.notion-code 覆盖） ========== */
 .notion-code {
   background-color: rgba(249, 250, 251, 1);
   border: 1px solid rgba(229, 231, 235, 1);
@@ -39,7 +39,7 @@ html.dark .notion code {
   color: rgba(229, 231, 235, 1);
 }
 
-/* ========== Token 颜色（作为非 Mac 模式下的 fallback） ========== */
+/* ========== Token 颜色（作为非 Mac 模式 / Prism 主题加载失败时的兜底） ========== */
 .token.cdata,
 .token.doctype,
 .token.prolog {
