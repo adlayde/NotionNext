@@ -192,12 +192,12 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
         panel.style.maxHeight = expanded ? '9999px' : '0px'
 
         // 展开后等待过渡动画完成，重新计算行号高度
-        if (expanded && Prism?.plugins?.lineNumbers?.resize) {
+        if (expanded) {
           setTimeout(() => {
             const preCodes = panel.querySelectorAll('pre.notion-code')
             preCodes.forEach(preCode => {
               try {
-                Prism.plugins.lineNumbers.resize(preCode)
+                forceResizeLineNumbers(preCode)
               } catch (e) {
                 /* ignore */
               }
@@ -302,19 +302,25 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
   }
 
   // 高亮完成后，强制重新计算所有代码块的行号，修复长代码块行号显示不完整的问题
-  if (codeLineNumbers && Prism?.plugins?.lineNumbers?.resize) {
-    setTimeout(() => {
+  // 使用自定义 forceResizeLineNumbers，因为 Prism 的 resize 在 white-space: pre 时完全无效
+  if (codeLineNumbers) {
+    const doResize = () => {
       const preCodes = container?.querySelectorAll('pre.notion-code')
       if (preCodes) {
         preCodes.forEach(preCode => {
           try {
-            Prism.plugins.lineNumbers.resize(preCode)
+            forceResizeLineNumbers(preCode)
           } catch (e) {
             /* ignore */
           }
         })
       }
-    }, 200)
+    }
+    // 多次执行，覆盖 autoloader 异步重新高亮的时间窗口
+    doResize()
+    setTimeout(doResize, 200)
+    setTimeout(doResize, 600)
+    setTimeout(doResize, 1200)
   }
 
   // 折叠代码行号bug
@@ -327,12 +333,38 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
  * 行号样式在首次渲染或被detail折叠后行高判断错误
  * 在此手动resize计算
  */
+/**
+ * 强制重新计算代码块行号 — 不依赖 Prism 的 resize（它在 white-space: pre 时无效）
+ * 直接根据 <code> 文本中的换行符数量重建 .line-numbers-rows
+ */
+function forceResizeLineNumbers(preCode) {
+  const code = preCode.querySelector('code')
+  const lineNumbersWrapper = preCode.querySelector('.line-numbers-rows')
+  if (!code || !lineNumbersWrapper) return
+
+  // 与 Prism 插件使用相同的逻辑计算行数
+  const text = code.textContent || ''
+  const lines = text.split(/\n(?!$)/g)
+  const lineCount = lines.length
+
+  // 如果行号数量已经正确，无需重建
+  if (lineNumbersWrapper.childElementCount === lineCount) return
+
+  // 清除旧的行号
+  while (lineNumbersWrapper.firstChild) {
+    lineNumbersWrapper.removeChild(lineNumbersWrapper.firstChild)
+  }
+
+  // 创建新的行号
+  for (let i = 0; i < lineCount; i++) {
+    const span = document.createElement('span')
+    lineNumbersWrapper.appendChild(span)
+  }
+}
+
 const fixCodeLineStyle = () => {
   const article = getNotionArticle()
   if (!article) {
-    return () => {}
-  }
-  if (!Prism?.plugins?.lineNumbers?.resize) {
     return () => {}
   }
   const observer = new MutationObserver(mutationsList => {
@@ -345,7 +377,7 @@ const fixCodeLineStyle = () => {
         const preCodes = m.target.querySelectorAll('pre.notion-code')
         for (const preCode of preCodes) {
           try {
-            Prism.plugins.lineNumbers.resize(preCode)
+            forceResizeLineNumbers(preCode)
           } catch (e) {
             /* ignore */
           }
@@ -361,7 +393,7 @@ const fixCodeLineStyle = () => {
     const preCodes = article.querySelectorAll('pre.notion-code')
     for (const preCode of preCodes) {
       try {
-        Prism.plugins.lineNumbers.resize(preCode)
+        forceResizeLineNumbers(preCode)
       } catch (e) {
         /* ignore */
       }
