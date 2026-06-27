@@ -11,9 +11,8 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   /* 背景透明，让 Prism 主题的背景色自然透出 */
   background: transparent;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 18px 44px rgba(0, 0, 0, 0.18);
   overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: transform 0.3s ease;
 }
 html.dark .code-toolbar {
   border-color: rgba(255, 255, 255, 0.12);
