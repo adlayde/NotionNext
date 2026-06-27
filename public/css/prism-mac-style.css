@@ -88,6 +88,9 @@ pre.notion-code {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
+pre.notion-code.line-numbers {
+  padding-left: 3.8em !important;
+}
 
 /* 5. 智能折叠 S1 极简 UI */
 .collapse-wrapper {
