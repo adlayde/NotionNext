@@ -336,27 +336,12 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
 /**
  * 强制重新计算代码块行号 — 不依赖 Prism 的 resize（它在 white-space: pre 时无效）
  * 直接根据 <code> 文本中的换行符数量重建 .line-numbers-rows
+ * 注：行号位置/行高由 CSS !important 控制，此函数仅负责数量正确
  */
 function forceResizeLineNumbers(preCode) {
   const code = preCode.querySelector('code')
   const lineNumbersWrapper = preCode.querySelector('.line-numbers-rows')
   if (!code || !lineNumbersWrapper) return
-
-  // 获取 pre 的计算行高，确保行号与代码行精确对齐
-  const computedStyle = window.getComputedStyle(preCode)
-  const preLineHeight = parseFloat(computedStyle.lineHeight) || 23.552
-  const prePaddingTop = parseFloat(computedStyle.paddingTop) || 46
-
-  // 用内联样式强制修正行号容器的 top 和 line-height
-  // CSS 规则可能被 Prism 默认样式覆盖，内联样式优先级最高
-  lineNumbersWrapper.style.top = prePaddingTop + 'px'
-  lineNumbersWrapper.style.lineHeight = preLineHeight + 'px'
-
-  // 同步修正所有已存在的 span 的 line-height
-  const existingSpans = lineNumbersWrapper.children
-  for (let i = 0; i < existingSpans.length; i++) {
-    existingSpans[i].style.lineHeight = preLineHeight + 'px'
-  }
 
   // 与 Prism 插件使用相同的逻辑计算行数
   const text = code.textContent || ''
@@ -374,7 +359,6 @@ function forceResizeLineNumbers(preCode) {
   // 创建新的行号
   for (let i = 0; i < lineCount; i++) {
     const span = document.createElement('span')
-    span.style.lineHeight = preLineHeight + 'px'
     lineNumbersWrapper.appendChild(span)
   }
 }
