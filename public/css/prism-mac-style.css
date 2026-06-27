@@ -105,6 +105,15 @@ pre.notion-code.line-numbers {
   padding-left: 3.8em !important;
 }
 
+/* 修复长代码块行号显示不完整：调整行号容器位置和 span 高度 */
+pre.notion-code.line-numbers .line-numbers-rows {
+  top: 46px; /* 与 padding-top 对齐 */
+  height: auto;
+}
+pre.notion-code.line-numbers .line-numbers-rows > span {
+  line-height: 1.6;
+}
+
 /* 5. 智能折叠 UI */
 .collapse-wrapper {
   margin: 0;
